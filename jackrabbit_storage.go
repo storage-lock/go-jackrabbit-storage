@@ -1,0 +1,55 @@
+package jackrabbit_storage
+
+import (
+	"context"
+	"sync"
+	"time"
+
+	go_iterator "github.com/golang-infrastructure/go-iterator"
+	"github.com/storage-lock/go-storage"
+	storage_lock "github.com/storage-lock/go-storage-lock"
+)
+
+// JackrabbitStorage jackrabbit存储实现
+type JackrabbitStorage struct {
+	mu sync.RWMutex
+}
+
+var _ storage.Storage = &JackrabbitStorage{}
+
+func NewJackrabbitStorage(ctx context.Context) (*JackrabbitStorage, error) {
+	return &JackrabbitStorage{}, nil
+}
+
+const StorageName = "jackrabbit-storage"
+
+func (x *JackrabbitStorage) GetName() string { return StorageName }
+func (x *JackrabbitStorage) Capabilities() []storage.StorageCapability {
+	return []storage.StorageCapability{storage.CapabilityCAS, storage.CapabilityReliableTime}
+}
+func (x *JackrabbitStorage) Init(ctx context.Context) error { return nil }
+func (x *JackrabbitStorage) CreateWithVersion(ctx context.Context, lockId string, version storage.Version, lockInformation *storage.LockInformation) error {
+	x.mu.Lock()
+	defer x.mu.Unlock()
+	return nil
+}
+func (x *JackrabbitStorage) UpdateWithVersion(ctx context.Context, lockId string, expectedVersion, newVersion storage.Version, lockInformation *storage.LockInformation) error {
+	x.mu.Lock()
+	defer x.mu.Unlock()
+	return nil
+}
+func (x *JackrabbitStorage) DeleteWithVersion(ctx context.Context, lockId string, expectedVersion storage.Version, lockInformation *storage.LockInformation) error {
+	x.mu.Lock()
+	defer x.mu.Unlock()
+	return nil
+}
+func (x *JackrabbitStorage) Get(ctx context.Context, lockId string) (string, error) {
+	x.mu.RLock()
+	defer x.mu.RUnlock()
+	return "", storage_lock.ErrLockNotFound
+}
+func (x *JackrabbitStorage) GetTime(ctx context.Context) (time.Time, error) { return time.Now(), nil }
+func (x *JackrabbitStorage) Close(ctx context.Context) error { return nil }
+func (x *JackrabbitStorage) List(ctx context.Context) (go_iterator.Iterator[*storage.LockInformation], error) {
+	return go_iterator.FromSlice([]*storage.LockInformation{}), nil
+}
